@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Google Sidebar",
+  "version": "1.8",
+  "icons": {
+    "128": "icon.png"
+  },
+  "description": "Google Sidebar giúp bạn có thể tìm kiếm ngay ở thanh bên",
+  "permissions": [
+    "sidePanel",
+    "declarativeNetRequest",
+    "contextMenus",
+    "tabs",
+    "scripting",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_icon": "icon.png",
+    "default_title": "Mở Google AI Sidebar"
+  },
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  }
+}

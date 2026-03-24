@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "user-agent",
+          "operation": "set",
+          "value": "Mozilla/5.0 (Linux; Android 17; Pixel 10 Pro Build/AP4A.260305.001.B2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "https://www.google.com/*",
+      "resourceTypes": [
+        "sub_frame"
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [
+        {
+          "header": "x-frame-options",
+          "operation": "remove"
+        },
+        {
+          "header": "content-security-policy",
+          "operation": "remove"
+        }
+      ]
+    },
+    "condition": {
+      "resourceTypes": [
+        "sub_frame"
+      ]
+    }
+  }
+]

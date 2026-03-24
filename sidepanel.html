@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Google Sidebar AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --md-sys-color-surface: #fdfcff;
+        }
+        body, html {
+            margin: 0; padding: 0;
+            height: 100vh; width: 100%;
+            overflow: hidden;
+            font-family: 'Google Sans Flex', sans-serif;
+            background-color: var(--md-sys-color-surface);
+        }
+        #md3-loader {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: multiply; 
+            z-index: 10;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+        }
+        /* Trạng thái ẩn của loader */
+        #md3-loader.hidden {
+            opacity: 0;
+        }
+        iframe {
+            border: none;
+            width: 100%; height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Icon loading MD3 tối ưu - sẽ tự ẩn đi khi load xong -->
+    <img id="md3-loader" src="https://tuanphong3108.github.io/md3-loading/Loading_Indicator.gif" width="60">
+    
+    <!-- Iframe chính - Mặc định về trang chủ Google tối giản -->
+    <iframe id="googleFrame" src="https://www.google.com/"></iframe>
+
+    <script src="sidepanel.js"></script>
+</body>
+</html>
