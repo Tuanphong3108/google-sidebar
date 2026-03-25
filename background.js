@@ -1,7 +1,7 @@
 /**
- * Background.js - Hệ thống điều phối Android 17 (Ultra Tab-Out Fix + AI Summarizer Hybrid)
- * Đảm bảo link ngoài chỉ mở trong tab mới KHI Ở TRONG SIDEBAR
- * Cập nhật: Nâng cấp "Tóm tắt trang này" với khả năng đọc nội dung trực tiếp (chrome.scripting)
+ * Background.js - Hệ thống điều phối Android 17 (AI Sidebar Edition)
+ * Đã lược bỏ logic điều hướng Iframe (để Google tự xử lý theo cài đặt người dùng)
+ * Cập nhật: Tóm tắt trang với chrome.scripting và Menu AI Rewrite
  * Chủ sở hữu: Phong (Pixel 10 Pro / Dell Latitude)
  */
 
@@ -42,7 +42,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// Biến lưu trữ Tab ID đang sử dụng Sidebar để tránh làm phiền các tab khác
+// Biến lưu trữ Tab ID hiện tại để Sidebar biết mình đang ở đâu (nếu cần)
 let activeSidebarTabId = null;
 
 /**
@@ -69,11 +69,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     activeSidebarTabId = tab.id;
     chrome.sidePanel.open({ tabId: tab.id });
 
-    // Sử dụng scripting để lấy nội dung text thực tế của trang
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
-        // Lấy khoảng 4000 ký tự đầu tiên để tránh quá tải
         return document.body.innerText.slice(0, 4000);
       }
     }, (results) => {
@@ -120,42 +118,12 @@ Yêu cầu:
 
   if (!query) return;
 
-  // Ghi nhớ Tab ID này là tab đang dùng Sidebar
   activeSidebarTabId = tab.id;
   chrome.sidePanel.open({ tabId: tab.id });
   sendMessageWithRetry(query, isAI);
 });
 
-/**
- * TUYỆT KỸ VĂNG TAB: Đã được "xích" lại để chỉ ảnh hưởng Iframe bên trong Sidebar của đúng tab đang dùng
- */
-chrome.webNavigation.onBeforeNavigate.addListener((details) => {
-  // KIỂM TRA ĐIỀU KIỆN CHẶT CHẼ:
-  // 1. details.tabId === activeSidebarTabId: Chỉ tab đang tương tác với Sidebar mới bị xử lý
-  // 2. details.frameId > 0: Chỉ bắt link trong Iframe (Sidebar)
-  // 3. details.parentFrameId === 0: Đảm bảo đây là Iframe chính của Sidebar, không phải quảng cáo lồng nhau
-  if (activeSidebarTabId && details.tabId === activeSidebarTabId && details.frameId > 0) {
-    const url = details.url;
-    
-    // Vùng an toàn của Google
-    const isGoogleSearch = url.includes("google.com/search");
-    const isGoogleAccount = url.includes("accounts.google.com");
-    const isBlank = url === "about:blank";
-
-    // Nếu link định "vượt rào" ra khỏi trang tìm kiếm Google
-    if (!isGoogleSearch && !isGoogleAccount && !isBlank) {
-      // Mở ngay tab mới trên máy bro
-      chrome.tabs.create({ url: url });
-      
-      // Chặn đứng việc chuyển trang ngay trong Iframe Sidebar
-      chrome.tabs.update(details.tabId, {}); 
-    }
-  }
-});
-
-// Giải phóng bộ nhớ khi Tab bị đóng
+// Lắng nghe sự kiện đóng tab để reset state (giữ code sạch)
 chrome.tabs.onRemoved.addListener((tabId) => {
-  if (tabId === activeSidebarTabId) {
-    activeSidebarTabId = null;
-  }
+  if (tabId === activeSidebarTabId) activeSidebarTabId = null;
 });
