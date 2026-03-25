@@ -1,76 +1,110 @@
 /**
- * Sidepanel.js - Android 17 Edition (Final Tab-Out Shield)
- * Đã fix: Chỉ xử lý văng tab bên trong Sidebar, không làm loạn tab khác.
- * Tác giả: AI Assistant (Độ cho bro Phong - Dell Latitude)
+ * Sidepanel.js - Android 17 Edition (Full Dialog & Panel Control)
+ * Tác giả: AI Assistant (Độ cho bro Phong)
  */
 
 const frame = document.getElementById('googleFrame');
 const loader = document.getElementById('md3-loader');
 
-// Biến lưu trữ URL tìm kiếm hiện tại để so sánh
-let lastValidGoogleUrl = "";
-
-/**
- * Thực hiện tìm kiếm và hiện loading
- */
 function performSearch(query, isAI = false) {
     loader.classList.remove('hidden');
-    
-    // Tạo URL với tham số igu=1 để cho phép hiển thị trong iframe
     let url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-    
-    if (isAI) {
-        url += `&udm=50`; // Ép hiện AI Overview
-    }
-    
-    lastValidGoogleUrl = url;
+    if (isAI) url += `&udm=50`;
     frame.src = url;
 }
 
-/**
- * Lắng nghe lệnh từ Background (Search, Rewrite, Summarize)
- */
+// Lắng nghe lệnh từ Background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "SEARCH_QUERY") {
         performSearch(message.query, message.isAI);
         sendResponse({ status: "ok" });
+    } 
+    else if (message.type === "OPEN_CUSTOM_REWRITE_DIALOG") {
+        showCustomRewriteDialog(message.selectionText);
+        sendResponse({ status: "dialog_opened" });
     }
     return true;
 });
 
 /**
- * Cú đấm thép: Chặn đứng điều hướng trái phép ngay tại Iframe
- * Chúng ta sẽ dùng tính năng Sandbox của Iframe để ngăn nó tự tiện chuyển hướng 
- * nhưng vẫn cho phép chạy script của Google.
+ * Hàm tạo Dialog Full Screen chuẩn Material Design 3
  */
-frame.addEventListener('load', () => {
-    loader.classList.add('hidden');
+function showCustomRewriteDialog(originalText) {
+    const oldDialog = document.getElementById('custom-rewrite-dialog');
+    if (oldDialog) oldDialog.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'custom-rewrite-dialog';
+    overlay.className = 'dialog-overlay';
     
-    // Mẹo: Nếu bro thấy link vẫn không văng, có thể do Google chặn truy cập contentWindow.
-    // Nhưng onload vẫn sẽ chạy mỗi khi iframe thay đổi nội dung.
-    console.log("Sidebar: Iframe đã cập nhật.");
-});
+    overlay.innerHTML = `
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Viết lại tùy chỉnh</h3>
+                <p class="dialog-body">Bạn muốn biến đổi văn bản theo phong cách nào?</p>
+            </div>
+            
+            <div class="md3-input-container">
+                <input type="text" id="custom-tone-input" class="md3-input"
+                    placeholder="Ví dụ: hài hước, kiếm hiệp, Gen Z..." autofocus>
+            </div>
+            
+            <div class="actions">
+                <button id="btn-confirm-rewrite" class="btn btn-filled">Thực hiện</button>
+                <button id="btn-cancel-rewrite" class="btn btn-text">Hủy</button>
+            </div>
+        </div>
+    `;
 
-/**
- * BỔ SUNG QUAN TRỌNG CHO BACKGROUND.JS:
- * Bro hãy kiểm tra lại file background.js, đoạn webNavigation.
- * Đảm bảo chỉ dùng 'sub_frame' và check đúng activeSidebarTabId.
- * * Nếu vẫn bị ảnh hưởng tab khác, hãy thay đoạn chrome.tabs.update(details.tabId, {})
- * bằng cách return hoặc không làm gì cả đối với các tab không phải activeSidebarTabId.
- */
+    document.body.appendChild(overlay);
 
-// Xử lý Ripple effect cho các phần tử Material Design 3 nếu có sau này
-document.querySelectorAll('.md3-button').forEach(button => {
-    button.addEventListener('click', function(e) {
-        let ripple = document.createElement('span');
-        ripple.classList.add('ripple');
-        this.appendChild(ripple);
-        let d = Math.max(this.clientWidth, this.clientHeight);
-        ripple.style.width = ripple.style.height = d + 'px';
-        ripple.style.left = e.clientX - this.offsetLeft - d/2 + 'px';
-        ripple.style.top = e.clientY - this.offsetTop - d/2 + 'px';
-        setTimeout(() => ripple.remove(), 600);
+    requestAnimationFrame(() => overlay.classList.add('active'));
+
+    const input = document.getElementById('custom-tone-input');
+    const btnCancel = document.getElementById('btn-cancel-rewrite');
+    const btnConfirm = document.getElementById('btn-confirm-rewrite');
+
+    // Ripple effect cho button
+    [btnCancel, btnConfirm].forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            this.appendChild(ripple);
+            
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+            ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+            
+            setTimeout(() => ripple.remove(), 600);
+        });
     });
-});
 
-console.log("🕶️ Sidepanel Android 17 đã sẵn sàng chiến đấu!");
+    const closeDialog = () => {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.remove(), 300);
+    };
+
+    // Bấm Hủy -> Đóng Side Panel luôn
+    btnCancel.onclick = () => {
+        closeDialog();
+        // Lệnh đặc biệt để đóng Side Panel từ chính nó
+        window.close(); 
+    };
+    
+    btnConfirm.onclick = () => {
+        const tone = input.value.trim() || "mới lạ";
+        const query = `Hãy viết lại "${originalText}" một cách ${tone} hơn, lưu ý chỉ viết lại câu, không viết dài dòng, không giải thích!`;
+        performSearch(query, true);
+        setTimeout(closeDialog, 200);
+    };
+
+    input.onkeydown = (e) => {
+        if (e.key === 'Enter') btnConfirm.click();
+        if (e.key === 'Escape') btnCancel.click();
+    };
+}
+
+// Frame Load logic
+frame.onload = () => loader.classList.add('hidden');
