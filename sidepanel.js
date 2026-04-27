@@ -1,33 +1,24 @@
 /**
  * Sidepanel.js - Android 17 Edition (Full Dialog & Panel Control)
  * Tác giả: AI Assistant (Độ cho bro Phong)
- * Cập nhật: Hỗ trợ Quick Search từ phím tắt Ctrl+Shift+Alt+G
  */
 
 const frame = document.getElementById('googleFrame');
 const loader = document.getElementById('md3-loader');
 
-/**
- * Hàm thực hiện tìm kiếm - Linh hồn của Sidebar
- */
 function performSearch(query, isAI = false) {
     loader.classList.remove('hidden');
     let url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-    
-    // Nếu là AI hoặc udm=50 từ phím tắt nhanh
     if (isAI) url += `&udm=50`;
-    
     frame.src = url;
 }
 
-// Lắng nghe lệnh từ các nguồn (Background, Content Script)
+// Lắng nghe lệnh từ Background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    // 1. Lệnh từ Menu chuột phải HOẶC từ Phím tắt nhanh (Quick Search Trigger)
-    if (message.type === "SEARCH_QUERY" || message.type === "QUICK_SEARCH_TRIGGER") {
+    if (message.type === "SEARCH_QUERY") {
         performSearch(message.query, message.isAI);
         sendResponse({ status: "ok" });
     } 
-    // 2. Lệnh mở Dialog viết lại tùy chỉnh (Dành cho Menu chuột phải)
     else if (message.type === "OPEN_CUSTOM_REWRITE_DIALOG") {
         showCustomRewriteDialog(message.selectionText);
         sendResponse({ status: "dialog_opened" });
@@ -66,13 +57,14 @@ function showCustomRewriteDialog(originalText) {
     `;
 
     document.body.appendChild(overlay);
+
     requestAnimationFrame(() => overlay.classList.add('active'));
 
     const input = document.getElementById('custom-tone-input');
     const btnCancel = document.getElementById('btn-cancel-rewrite');
     const btnConfirm = document.getElementById('btn-confirm-rewrite');
 
-    // Ripple effect cho các nút bấm trong Dialog
+    // Ripple effect cho button
     [btnCancel, btnConfirm].forEach(btn => {
         btn.addEventListener('click', function(e) {
             const ripple = document.createElement('span');
@@ -94,21 +86,25 @@ function showCustomRewriteDialog(originalText) {
         setTimeout(() => overlay.remove(), 300);
     };
 
-    // Chỉ đóng Dialog, không đóng Sidebar để giữ trải nghiệm liên tục
-    btnCancel.onclick = closeDialog; 
+    // Bấm Hủy -> Đóng Side Panel luôn
+    btnCancel.onclick = () => {
+        closeDialog();
+        // Lệnh đặc biệt để đóng Side Panel từ chính nó
+        window.close(); 
+    };
     
     btnConfirm.onclick = () => {
         const tone = input.value.trim() || "mới lạ";
         const query = `Hãy viết lại "${originalText}" một cách ${tone} hơn, lưu ý chỉ viết lại câu, không viết dài dòng, không giải thích!`;
-        performSearch(query, true); // Rewrite luôn dùng AI
+        performSearch(query, true);
         setTimeout(closeDialog, 200);
     };
 
     input.onkeydown = (e) => {
         if (e.key === 'Enter') btnConfirm.click();
-        if (e.key === 'Escape') closeDialog();
+        if (e.key === 'Escape') btnCancel.click();
     };
 }
 
-// Xử lý ẩn loader khi Iframe đã tải xong
+// Frame Load logic
 frame.onload = () => loader.classList.add('hidden');
