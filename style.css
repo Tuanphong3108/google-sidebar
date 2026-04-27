@@ -5,13 +5,11 @@
     --md-sys-color-on-surface: #1d1b20;
     --md-sys-color-outline-variant: #49454f;
     --md-sys-color-surface-variant: #e7e0ec;
-    --md-sys-color-on-primary: #ffffff;
 }
 
-/* --- BASE STYLES --- */
 body, html {
     margin: 0; padding: 0;
-    height: 100vh; width: 100%;                                                                                                                
+    height: 100vh; width: 100%;
     overflow: hidden;
     font-family: 'Google Sans Flex', sans-serif;
     background-color: var(--md-sys-color-surface);
@@ -36,11 +34,11 @@ iframe {
     display: block;
 }
 
-/* --- FULL SCREEN DIALOG SYSTEM (Sidepanel) --- */
+/* --- FULL SCREEN DIALOG SYSTEM --- */
 .dialog-overlay {
     position: fixed;
     inset: 0;
-    background-color: var(--md-sys-color-surface);
+    background-color: var(--md-sys-color-surface); /* Full nền không mờ để chiếm trọn Sidebar */
     display: flex;
     flex-direction: column;
     z-index: 9999;
@@ -72,7 +70,7 @@ iframe {
 
 .dialog-title {
     color: var(--md-sys-color-on-surface);
-    font-size: 1.75rem;
+    font-size: 1.75rem; /* Tiêu đề to hơn cho bản Full */
     font-weight: 500;
     margin: 0;
 }
@@ -83,6 +81,7 @@ iframe {
     margin-bottom: 32px;
 }
 
+/* Input MD3 Full Width */
 .md3-input-container {
     flex-grow: 1;
 }
@@ -105,9 +104,10 @@ iframe {
     border-color: var(--md-sys-color-primary);
 }
 
+/* Bottom Actions */
 .actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Nút xếp dọc cho app-like feel */
     gap: 12px;
     margin-bottom: 24px;
 }
@@ -140,6 +140,7 @@ iframe {
 
 .btn-filled:active { transform: scale(0.97); }
 
+/* --- RIPPLE --- */
 .ripple {
     position: absolute;
     border-radius: 50%;
@@ -155,137 +156,4 @@ iframe {
 
 @keyframes ripple-effect {
     to { transform: scale(4); opacity: 0; }
-}
-
-/* --- QUICK SEARCH UI (CTRL+SHIFT+ALT+G) --- */
-#phong-qs-root * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-#phong-qs-root {
-    position: fixed; 
-    inset: 0; 
-    z-index: 2147483647;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex; 
-    flex-direction: column; 
-    align-items: center;
-    padding-top: 18vh; 
-    backdrop-filter: blur(12px);
-    font-family: 'Google Sans Flex', sans-serif !important;
-}
-
-.qs-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    width: 700px; /* Tăng nhẹ chiều ngang để đủ chỗ cho nút tóm tắt */
-    max-width: 95%;
-    animation: phongSlideDown 0.4s cubic-bezier(0.05, 0.7, 0.1, 1);
-}
-
-.qs-bar {
-    background: var(--md-sys-color-surface);
-    width: 100%;
-    height: 64px;
-    border-radius: 32px; 
-    display: flex; 
-    align-items: center;
-    padding: 0 8px 0 12px; 
-    box-shadow: 0 24px 48px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    gap: 8px; /* Tạo khoảng cách đều giữa các thành phần trong bar */
-}
-
-.qs-icon { 
-    width: 28px; 
-    height: 28px; 
-    object-fit: contain;
-    margin-left: 8px;
-}
-
-/* Nút tóm tắt - Di chuyển vào bên trái thanh bar */
-.qs-summary-btn {
-    background: var(--md-sys-color-surface-container);
-    color: var(--md-sys-color-primary);
-    border: none;
-    padding: 0 16px;
-    height: 44px;
-    border-radius: 22px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.qs-summary-btn:hover {
-    background: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
-}
-
-.qs-input {
-    flex: 1; 
-    border: none !important; 
-    outline: none !important; 
-    font-size: 18px;
-    background: transparent !important; 
-    color: var(--md-sys-color-on-surface) !important;
-    font-family: inherit;
-    padding: 0 8px;
-}
-
-.qs-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Tăng khoảng cách giữa nút search và nút đóng */
-    margin-right: 4px;
-}
-
-.qs-action-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    color: var(--md-sys-color-outline-variant);
-}
-
-.qs-search-submit {
-    color: var(--md-sys-color-primary);
-}
-
-.qs-action-btn:hover {
-    background: var(--md-sys-color-surface-variant);
-}
-
-.qs-action-btn:active {
-    transform: scale(0.9);
-}
-
-.material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    font-size: 22px;
-}
-
-.qs-action-btn:hover .material-symbols-outlined,
-.qs-summary-btn:hover .material-symbols-outlined {
-    font-variation-settings: 'FILL' 1;
-}
-
-@keyframes phongSlideDown { 
-    from { opacity: 0; transform: translateY(-40px) scale(0.9); } 
-    to { opacity: 1; transform: translateY(0) scale(1); }
 }
